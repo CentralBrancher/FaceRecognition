@@ -12,9 +12,6 @@ public class FaceDetectionTests
     [Fact]
     public async Task Detects_And_Stores_Faces_From_Test_Images()
     {
-        // Suppress ONNX Runtime warnings
-        Environment.SetEnvironmentVariable("ORT_LOG_SEVERITY_LEVEL", "3");
-
         // Arrange
         string basePath = AppContext.BaseDirectory;
         string imagesPath = Path.Combine(basePath, "images");
