@@ -28,7 +28,7 @@ class Program
             Path.Combine(modelsPath, "version-RFB-320.onnx"), options);
 
         var embedder = new FaceEmbedderONNX(
-            Path.Combine(modelsPath, "arc.onnx"));
+            Path.Combine(modelsPath, "arc.onnx"), options);
             
         var database = new FaceDatabaseSQL(
             "Server=.\\SQLEXPRESS;Database=FaceRecognition;Trusted_Connection=True;TrustServerCertificate=True", 

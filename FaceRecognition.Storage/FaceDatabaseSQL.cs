@@ -18,15 +18,16 @@ public class FaceDatabaseSQL(string connectionString, string modelName) : IFaceD
         using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        var sql = @"INSERT INTO Faces (PersonName, Embedding, EmbeddingDim, ModelName)
-            VALUES (@PersonName, @Embedding, @EmbeddingDim, @ModelName)";
+        var sql = @"INSERT INTO Faces (PersonName, Embedding, EmbeddingDim, ModelName, CroppedPath)
+            VALUES (@PersonName, @Embedding, @EmbeddingDim, @ModelName, @CroppedPath)";
 
         await connection.ExecuteAsync(sql, new
         {
             PersonName = face.Label,
             Embedding = FloatArrayToByteArray(face.Embedding),
             EmbeddingDim = face.Embedding.Length,
-            ModelName = _modelName
+            ModelName = _modelName,
+            CroppedPath = face.CroppedImagePath
         });
     }
 

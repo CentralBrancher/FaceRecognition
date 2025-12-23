@@ -14,15 +14,22 @@ public class FaceRecognitionService(IFaceDetector detector, IFaceEmbedder embedd
 
     public async Task<IEnumerable<Face>> ProcessImageAsync(Image<Rgba32> image)
     {
-        // 1. Detect faces
         var detectedFaces = _detector.DetectFaces(image);
-
         var facesWithEmbeddings = new List<Face>();
+        string facesFolder = Path.Combine(AppContext.BaseDirectory, "faces");
+
+        if (!Directory.Exists(facesFolder))
+            Directory.CreateDirectory(facesFolder);
 
         foreach (var face in detectedFaces)
         {
-            // 2. Crop face
+            // 1. Crop face
             var faceCrop = CropFace(image, face.BoundingBox);
+
+            // 2. Save cropped face
+            string faceFile = Path.Combine(facesFolder, $"face_{Guid.NewGuid()}.jpg");
+            await File.WriteAllBytesAsync(faceFile, faceCrop);
+            face.CroppedImagePath = faceFile;
 
             // 3. Get embedding
             face.Embedding = _embedder.GetEmbedding(faceCrop);
