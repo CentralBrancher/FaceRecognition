@@ -8,4 +8,5 @@ public class Face
     public Rectangle BoundingBox { get; set; }
     public float[]? Embedding { get; set; }
     public string? CroppedImagePath { get; set; }
+    public float? MatchSimilarity { get; set; }
 }

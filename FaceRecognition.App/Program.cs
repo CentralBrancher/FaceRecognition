@@ -4,6 +4,7 @@ using FaceRecognition.App.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Microsoft.ML.OnnxRuntime;
+using FaceRecognition.Core.Matching;
 
 namespace FaceRecognition.App;
 
@@ -16,7 +17,9 @@ class Program
         // Paths
         string basePath = AppContext.BaseDirectory;
         string imagesPath = Path.Combine(basePath, "images");
-        string modelsPath = Path.Combine(basePath, "models");
+        
+        string solutionRoot = Path.Combine(basePath, "../../../..");
+        string modelsPath = Path.Combine(solutionRoot, "models");
 
         // Initialize services
         var options = new SessionOptions
@@ -34,8 +37,10 @@ class Program
             "Server=.\\SQLEXPRESS;Database=FaceRecognition;Trusted_Connection=True;TrustServerCertificate=True", 
             "arcface_512");
 
+        var matcher = new CosineFaceMatcher(threshold: (float)0.65);
+
         var recognitionService = new FaceRecognitionService(
-            detector, embedder, database);
+            detector, embedder, database, matcher);
 
         // Process each image
         foreach (var imageFile in Directory.GetFiles(imagesPath, "*.jpg"))

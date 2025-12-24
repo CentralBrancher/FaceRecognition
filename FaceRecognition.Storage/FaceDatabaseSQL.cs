@@ -26,13 +26,14 @@ public class FaceDatabaseSQL(string connectionString, string modelName) : IFaceD
                     PersonName   = @PersonName,
                     Embedding    = @Embedding,
                     EmbeddingDim = @EmbeddingDim,
-                    ModelName    = @ModelName
+                    ModelName    = @ModelName,
+                    Similarity = @Similarity
                 WHERE CroppedPath = @CroppedPath
             END
             ELSE
             BEGIN
-                INSERT INTO Faces (PersonName, Embedding, EmbeddingDim, ModelName, CroppedPath)
-                VALUES (@PersonName, @Embedding, @EmbeddingDim, @ModelName, @CroppedPath)
+                INSERT INTO Faces (PersonName, Embedding, EmbeddingDim, ModelName, CroppedPath, Similarity)
+                VALUES (@PersonName, @Embedding, @EmbeddingDim, @ModelName, @CroppedPath, @Similarity)
             END";
 
         await connection.ExecuteAsync(sql, new
@@ -41,8 +42,34 @@ public class FaceDatabaseSQL(string connectionString, string modelName) : IFaceD
             Embedding = FloatArrayToByteArray(face.Embedding),
             EmbeddingDim = face.Embedding.Length,
             ModelName = _modelName,
-            CroppedPath = face.CroppedImagePath
+            CroppedPath = face.CroppedImagePath,
+            Similarity = face.MatchSimilarity
         });
+    }
+
+    public async Task<IEnumerable<Face>> GetAllFacesAsync(string filePath)
+    {
+        var faces = new List<Face>();
+
+        using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        using var cmd = new SqlCommand(
+            $"SELECT PersonName, Embedding, CroppedPath FROM Faces", conn);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (reader.GetString(2) == filePath) continue;
+
+            faces.Add(new Face
+            {
+                Label = reader.GetString(0),
+                Embedding = ByteArrayToFloatArray((byte[])reader[1])
+            });
+        }
+
+        return faces;
     }
 
     private static byte[] FloatArrayToByteArray(float[] floats)
@@ -50,5 +77,15 @@ public class FaceDatabaseSQL(string connectionString, string modelName) : IFaceD
         var bytes = new byte[floats.Length * sizeof(float)];
         Buffer.BlockCopy(floats, 0, bytes, 0, bytes.Length);
         return bytes;
+    }
+
+    private static float[] ByteArrayToFloatArray(byte[] bytes)
+    {
+        if (bytes.Length % sizeof(float) != 0)
+            throw new InvalidOperationException("Invalid embedding byte length.");
+
+        var floats = new float[bytes.Length / sizeof(float)];
+        Buffer.BlockCopy(bytes, 0, floats, 0, bytes.Length);
+        return floats;
     }
 }

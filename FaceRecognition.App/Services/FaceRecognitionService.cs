@@ -1,16 +1,18 @@
 using FaceRecognition.Core.Interfaces;
 using FaceRecognition.Core.Model;
+using FaceRecognition.Core.Utils;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace FaceRecognition.App.Services;
 
-public class FaceRecognitionService(IFaceDetector detector, IFaceEmbedder embedder, IFaceDatabase database)
+public class FaceRecognitionService(IFaceDetector detector, IFaceEmbedder embedder, IFaceDatabase database, IFaceMatcher matcher)
 {
     private readonly IFaceDetector _detector = detector;
     private readonly IFaceEmbedder _embedder = embedder;
     private readonly IFaceDatabase _database = database;
+    private readonly IFaceMatcher _matcher = matcher;    
 
     public async Task<IEnumerable<Face>> ProcessImageAsync(Image<Rgba32> image, string imageName)
     {
@@ -36,7 +38,17 @@ public class FaceRecognitionService(IFaceDetector detector, IFaceEmbedder embedd
             // 3. Get embedding
             face.Embedding = _embedder.GetEmbedding(faceCrop);
 
-            // 4. Save to DB
+            // 4. Check matches
+            var knownFaces = await _database.GetAllFacesAsync(faceFile);
+            var match = _matcher.Match(face.Embedding, knownFaces);
+
+            if (match.IsMatch)
+            {
+                face.Label = match.MatchedLabel!;
+                face.MatchSimilarity = match.Similarity;
+            }
+
+            // 5. Save to DB
             await _database.AddFaceAsync(face);
 
             facesWithEmbeddings.Add(face);
@@ -50,8 +62,6 @@ public class FaceRecognitionService(IFaceDetector detector, IFaceEmbedder embedd
     private static byte[] CropFace(Image<Rgba32> image, Rectangle bbox)
     {
         using var cropped = image.Clone(ctx => ctx.Crop(bbox));
-        using var ms = new MemoryStream();
-        cropped.SaveAsJpeg(ms);
-        return ms.ToArray();
+        return cropped.ToJpegBytes();
     }
 }
