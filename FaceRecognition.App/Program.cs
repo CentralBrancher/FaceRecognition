@@ -43,7 +43,8 @@ class Program
             Console.WriteLine($"Processing: {Path.GetFileName(imageFile)}");
 
             using var image = Image.Load<Rgba32>(imageFile);
-            var results = await recognitionService.ProcessImageAsync(image);
+            string imageName = Path.GetFileNameWithoutExtension(imageFile);
+            var results = await recognitionService.ProcessImageAsync(image, imageName);
 
             foreach (var face in results)
             {

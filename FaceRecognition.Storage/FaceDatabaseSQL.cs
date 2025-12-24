@@ -18,8 +18,22 @@ public class FaceDatabaseSQL(string connectionString, string modelName) : IFaceD
         using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        var sql = @"INSERT INTO Faces (PersonName, Embedding, EmbeddingDim, ModelName, CroppedPath)
-            VALUES (@PersonName, @Embedding, @EmbeddingDim, @ModelName, @CroppedPath)";
+        var sql = @"
+            IF EXISTS (SELECT 1 FROM Faces WHERE CroppedPath = @CroppedPath)
+            BEGIN
+                UPDATE Faces
+                SET
+                    PersonName   = @PersonName,
+                    Embedding    = @Embedding,
+                    EmbeddingDim = @EmbeddingDim,
+                    ModelName    = @ModelName
+                WHERE CroppedPath = @CroppedPath
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Faces (PersonName, Embedding, EmbeddingDim, ModelName, CroppedPath)
+                VALUES (@PersonName, @Embedding, @EmbeddingDim, @ModelName, @CroppedPath)
+            END";
 
         await connection.ExecuteAsync(sql, new
         {
