@@ -13,7 +13,7 @@ The goal is **clarity, control, and correctness**, not a black-box demo.
 
 ---
 
-## ✨ Features
+## Features
 
 - Face detection from images (UltraFace ONNX)
 - Face embedding extraction (ArcFace ONNX, 512-D)
@@ -24,7 +24,7 @@ The goal is **clarity, control, and correctness**, not a black-box demo.
 
 ---
 
-## 🧠 High-Level Pipeline
+## High-Level Pipeline
 
 ```bash
 Image
@@ -37,7 +37,7 @@ Image
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```bash
 FaceRecognition/
@@ -85,7 +85,7 @@ FaceRecognition/
 
 ---
 
-## 🔧 Requirements
+## Requirements
 
 - **.NET 9 SDK**
 - **SQL Server / SQL Express**
@@ -93,7 +93,7 @@ FaceRecognition/
 
 ---
 
-## 📦 Dependencies
+## Dependencies
 
 Minimal and explicit:
 
@@ -104,7 +104,7 @@ Minimal and explicit:
 
 ---
 
-## 🧠 Models Used
+## Models Used
 
 ### UltraFace (Face Detection)
 
@@ -122,7 +122,7 @@ Minimal and explicit:
 
 ---
 
-## 🗄 Database Schema
+## Database Schema
 
 Example SQL table:
 
@@ -141,7 +141,7 @@ CREATE TABLE Faces (
 
 ---
 
-## 🔢 Matching Logic
+## Matching Logic
 
 - Embeddings are L2-normalized
 - Similarity = dot product
@@ -158,7 +158,7 @@ There is no universal ArcFace threshold — tune for your data.
 
 ---
 
-## ▶ Running the App
+## Running the App
 
 Run:
 
@@ -172,20 +172,3 @@ The app will:
 - Generate embeddings
 - Store them in SQL
 - Attempt recognition against existing entries
-
----
-
-## 🔮 Possible Next Steps
-
-- Identity clustering (multi-image per person)
-- Threshold calibration (ROC / FAR / FRR)
-- ANN indexing (HNSW)
-- ASP.NET Core API
-- GPU ONNX Runtime
-- Batch inference
-
----
-
-## 📜 License
-
-MIT — use it, fork it, break it, learn from it.
